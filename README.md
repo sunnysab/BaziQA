@@ -274,12 +274,12 @@ print(f"准确率: {accuracy:.2%}")
 如果您在研究中使用了本数据集，请引用：
 
 ```bibtex
-@dataset{bazi_evaluation_2025,
-  title={BaZi Fortune-Telling Evaluation Dataset},
+@dataset{bazi_QA,
+  title={BaZi Fortune-Telling QA Dataset},
   author={Jiangxi Chen},
   year={2025},
   publisher={GitHub},
-  url={[https://github.com/Cheniangxi/bazi-test](https://github.com/ChenJiangxi/BaziQA)}
+  url={[https://github.com/Chenjiangxi/BaziQA](https://github.com/ChenJiangxi/BaziQA)}
 }
 ```
 
@@ -316,13 +316,13 @@ print(f"准确率: {accuracy:.2%}")
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启一个 Pull Request
 
-或直接在 [Issues](https://github.com/your-username/bazi-test/issues) 页面报告问题。
+或直接在 [Issues](https://github.com/Chenjiangxi/BaziQA/issues) 页面报告问题。
 
 ## 📧 联系方式
 
 如有疑问或建议，请通过以下方式联系：
 
-- **GitHub Issues**: [提交Issue](https://github.com/your-username/bazi-test/issues)
+- **GitHub Issues**: [提交Issue](https://github.com/Chenjiangxi/BaziQA/issues)
 
 ## 🔗 相关资源
 
