@@ -279,7 +279,7 @@ print(f"准确率: {accuracy:.2%}")
   author={Jiangxi Chen},
   year={2025},
   publisher={GitHub},
-  url={[https://github.com/Chenjiangxi/BaziQA](https://github.com/ChenJiangxi/BaziQA)}
+  url={https://github.com/ChenJiangxi/BaziQA}
 }
 ```
 
