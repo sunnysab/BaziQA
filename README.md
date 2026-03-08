@@ -276,10 +276,10 @@ print(f"准确率: {accuracy:.2%}")
 ```bibtex
 @dataset{bazi_evaluation_2025,
   title={BaZi Fortune-Telling Evaluation Dataset},
-  author={Your Name},
+  author={Jiangxi Chen},
   year={2025},
   publisher={GitHub},
-  url={https://github.com/your-username/bazi-test}
+  url={[https://github.com/Cheniangxi/bazi-test](https://github.com/ChenJiangxi/BaziQA)}
 }
 ```
 
