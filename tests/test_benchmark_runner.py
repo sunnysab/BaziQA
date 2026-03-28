@@ -2,10 +2,12 @@ from acc_test.run_benchmark import build_arg_parser as build_benchmark_arg_parse
 from pathlib import Path
 
 from acc_test.core.benchmark import (
-    build_summary_rows,
     build_failure_report_payload,
+    build_summary_rows,
     discover_contest_datasets,
+    load_existing_results,
     run_jobs,
+    split_pending_jobs,
 )
 from acc_test.core.evaluator import EvaluationResult, SubjectResult
 
@@ -95,6 +97,7 @@ def test_benchmark_cli_accepts_max_workers():
     args = parser.parse_args(["--protocol", "multiturn", "--max-workers", "3"])
     assert args.protocol == "multiturn"
     assert args.max_workers == 3
+    assert args.resume is True
 
 
 def test_build_failure_report_payload_counts_failures():
@@ -112,3 +115,50 @@ def test_build_failure_report_payload_counts_failures():
     assert payload["protocol"] == "multiturn"
     assert payload["failure_count"] == 1
     assert payload["failures"][0]["model"] == "gpt-5.4"
+    assert payload["interrupted"] is False
+
+
+def test_build_failure_report_payload_marks_interrupted_runs():
+    payload = build_failure_report_payload(protocol="structured", failures=[], interrupted=True)
+    assert payload["interrupted"] is True
+
+
+def test_load_existing_results_uses_latest_result_per_model_and_dataset(tmp_path: Path):
+    import json
+
+    older = tmp_path / "evals" / "gpt-5.4" / "multiturn" / "contest8_2025_20260328T000000Z.json"
+    newer = tmp_path / "evals" / "gpt-5.4" / "multiturn" / "contest8_2025_20260328T000100Z.json"
+    older.parent.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "dataset_path": "data/contest8_2025.json",
+        "protocol": "multiturn",
+        "model": "gpt-5.4",
+        "started_at": "2026-03-28T00:00:00+00:00",
+        "finished_at": "2026-03-28T00:01:00+00:00",
+        "total_questions": 40,
+        "correct_questions": 12,
+        "accuracy": 0.30,
+        "subjects": [],
+    }
+    older.write_text(json.dumps(payload), encoding="utf-8")
+    payload["accuracy"] = 0.40
+    newer.write_text(json.dumps(payload), encoding="utf-8")
+
+    results = load_existing_results(tmp_path, protocol="multiturn")
+
+    assert list(results) == [("gpt-5.4", "contest8_2025.json")]
+    assert results[("gpt-5.4", "contest8_2025.json")].accuracy == 0.40
+
+
+def test_split_pending_jobs_skips_completed_jobs():
+    jobs = [
+        ("gpt-5.4", Path("data/contest8_2025.json")),
+        ("gemini", Path("data/contest8_2024.json")),
+    ]
+    completed = {("gpt-5.4", "contest8_2025.json")}
+
+    pending, skipped = split_pending_jobs(jobs, completed)
+
+    assert pending == [("gemini", Path("data/contest8_2024.json"))]
+    assert skipped == [("gpt-5.4", Path("data/contest8_2025.json"))]

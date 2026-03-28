@@ -12,6 +12,7 @@ OUTPUT_BASE="${OUTPUT_BASE:-result}"
 DATA_DIR="${DATA_DIR:-data}"
 DRY_RUN="${DRY_RUN:-0}"
 FAILED_TASKS=0
+STOP_REQUESTED=0
 TOTAL_PROTOCOLS=0
 for _protocol in $PROTOCOLS; do
   TOTAL_PROTOCOLS=$((TOTAL_PROTOCOLS + 1))
@@ -19,8 +20,18 @@ done
 TOTAL_TASKS=$((RUNS * TOTAL_PROTOCOLS))
 TASK_INDEX=0
 
+on_interrupt() {
+  STOP_REQUESTED=1
+  printf 'interrupt received, will stop after current task\n'
+}
+
+trap on_interrupt INT
+
 for run in $(seq 1 "$RUNS"); do
   for protocol in $PROTOCOLS; do
+    if [[ "$STOP_REQUESTED" -eq 1 ]]; then
+      break 2
+    fi
     TASK_INDEX=$((TASK_INDEX + 1))
     cmd=(
       "$PYTHON_BIN"
@@ -66,4 +77,9 @@ done
 if [[ "$DRY_RUN" != "1" && "$FAILED_TASKS" -gt 0 ]]; then
   printf 'completed with %d failed task(s)\n' "$FAILED_TASKS"
   exit 1
+fi
+
+if [[ "$DRY_RUN" != "1" && "$STOP_REQUESTED" -eq 1 ]]; then
+  printf 'stopped by interrupt\n'
+  exit 130
 fi

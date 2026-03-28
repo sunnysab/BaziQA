@@ -310,6 +310,12 @@ MODEL=gpt-5.4|google/gemini-3.1-pro-preview
 .venv/bin/python acc_test/run_benchmark.py --protocol structured --model gpt-5.4 --max-workers 2
 ```
 
+默认会自动断点续跑，跳过当前 `output-root` 下已经存在的成功结果。若需要强制重跑，可显式关闭：
+
+```bash
+.venv/bin/python acc_test/run_benchmark.py --protocol multiturn --no-resume
+```
+
 ### 一次性跑所有实验
 
 如果 `.env` 中已经配置了两个模型，可以直接用：
@@ -330,6 +336,8 @@ RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh --model gpt-5.4
 - 同一命主内部 5 道题仍保持串行，以保证 multi-turn 会话语义不被破坏。
 - 如果某个模型/年份任务失败，已完成的结果文件会保留，失败详情会写入 `failures_<protocol>.json`。
 - `scripts/run_all_experiments.sh` 遇到单个任务失败时不会中断后续轮次，会在全部任务结束后以非零状态退出。
+- `run_benchmark.py` 默认开启断点续跑，已有成功结果会显示为 `SKIP ... reason=existing_result`。
+- 在 `run_all_experiments.sh` 执行时按 `Ctrl+C`，脚本会在当前子任务结束后停止，并保留已经完成的结果与汇总。
 
 结果会写入：
 
