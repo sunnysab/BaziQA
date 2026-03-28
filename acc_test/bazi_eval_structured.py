@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acc_test.core.bazi_provider import BaziProvider
 from acc_test.core.evaluator import evaluate_dataset, write_evaluation_result

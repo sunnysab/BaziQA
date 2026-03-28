@@ -242,6 +242,68 @@ print(f"准确率: {accuracy:.2%}")
 
 *注：详细评估方法和结果请参考相关论文。*
 
+## 🧪 严格复现评测
+
+当前仓库已补充一套面向 Contest8 的严格复现评测脚本，评测流程为：
+
+1. 读取 `data/contest8_*.json`
+2. 调用本地 `~/Code/0-Cloned/bazi/bazi.py` 生成命盘文本
+3. 将命盘作为固定上下文输入模型
+4. 以 `Multi-turn` 或 `Structured` 协议逐题评测
+5. 输出逐题结果与准确率到 `result/evals/`
+
+### 依赖安装
+
+建议在仓库内创建虚拟环境：
+
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+```
+
+### `.env` 配置
+
+脚本支持两套键名，优先读取 `OPENAI_*`，缺失时回退到兼容别名：
+
+```bash
+OPENAI_BASE_URL=http://your-gateway/v1
+OPENAI_API_KEY=your-key
+OPENAI_MODEL=gpt-5.4|google/gemini-3.1-pro-preview
+```
+
+或：
+
+```bash
+URL=http://your-gateway/v1/chat/completion
+KEY=your-key
+MODEL=gpt-5.4|google/gemini-3.1-pro-preview
+```
+
+说明：
+
+- `OPENAI_MODEL` / `MODEL` 支持用 `|` 分隔多个模型，脚本会逐个评测。
+- 若 `URL` 直接填网关首页或单聊天接口，脚本会自动规范到标准 OpenAI chat completions 路径。
+- 本地 `bazi.py` 依赖 `bidict`、`colorama`、`lunar_python`，已包含在 `requirements.txt`。
+
+### 运行 Multi-turn
+
+```bash
+.venv/bin/python acc_test/bazi_eval_multiturn.py data/contest8_2025.json --limit-subjects 1 --model gpt-5.4
+```
+
+### 运行 Structured
+
+```bash
+.venv/bin/python acc_test/bazi_eval_structured.py data/contest8_2025.json --limit-subjects 1 --model gpt-5.4
+```
+
+结果会写入：
+
+```text
+result/bazi-results/
+result/evals/<model>/<protocol>/
+```
+
 ## 🎯 数据集特点
 
 ### ✅ 优势
