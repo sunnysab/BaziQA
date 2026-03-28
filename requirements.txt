@@ -1,3 +1,7 @@
+bidict
+colorama
+openai
+lunar_python
 openai
 pytest
 python-dotenv

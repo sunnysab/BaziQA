@@ -3,6 +3,20 @@ from __future__ import annotations
 from collections.abc import Sequence
 
 
+def build_system_prompt(protocol: str) -> str:
+    base = (
+        "你是一名严谨的八字命理分析助手。"
+        "你只能依据用户提供的固定命盘上下文和题目作答，"
+        "不得凭空补充未提供的事实。"
+        "每题最后一行必须输出“最终答案：X”。"
+    )
+    if protocol == "structured":
+        return base + "本次评测要求你显式遵循量化扫描、冲突定级、应象映射三步。"
+    if protocol == "multiturn":
+        return base + "本次评测采用同一命主的多轮连续问答。"
+    raise ValueError(f"Unsupported protocol: {protocol}")
+
+
 def build_question_prompt(protocol: str, question: str, options: Sequence[str]) -> str:
     options_block = "\n".join(options)
     if protocol == "structured":
