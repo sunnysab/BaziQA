@@ -310,6 +310,20 @@ MODEL=gpt-5.4|google/gemini-3.1-pro-preview
 .venv/bin/python acc_test/run_benchmark.py --protocol structured --model gpt-5.4 --max-workers 2
 ```
 
+### 一次性跑所有实验
+
+如果 `.env` 中已经配置了两个模型，可以直接用：
+
+```bash
+RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh
+```
+
+如果只想临时限制到某个模型：
+
+```bash
+RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh --model gpt-5.4
+```
+
 说明：
 
 - `--max-workers` 只会并发“不同模型 / 不同年份”的任务。

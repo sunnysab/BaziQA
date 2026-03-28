@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON_BIN:-$ROOT_DIR/.venv/bin/python}"
+RUNS="${RUNS:-3}"
+MAX_WORKERS="${MAX_WORKERS:-4}"
+PROTOCOLS="${PROTOCOLS:-multiturn structured}"
+CACHE_ROOT="${CACHE_ROOT:-result}"
+OUTPUT_BASE="${OUTPUT_BASE:-result}"
+DATA_DIR="${DATA_DIR:-data}"
+DRY_RUN="${DRY_RUN:-0}"
+
+for run in $(seq 1 "$RUNS"); do
+  for protocol in $PROTOCOLS; do
+    cmd=(
+      "$PYTHON_BIN"
+      "$ROOT_DIR/acc_test/run_benchmark.py"
+      --protocol "$protocol"
+      --data-dir "$DATA_DIR"
+      --max-workers "$MAX_WORKERS"
+      --cache-root "$CACHE_ROOT"
+      --output-root "$OUTPUT_BASE/run$run"
+      "$@"
+    )
+
+    if [[ "$DRY_RUN" == "1" ]]; then
+      printf '%q ' "${cmd[@]}"
+      printf '\n'
+    else
+      "${cmd[@]}"
+    fi
+  done
+done
