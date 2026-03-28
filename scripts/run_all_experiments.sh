@@ -11,9 +11,16 @@ CACHE_ROOT="${CACHE_ROOT:-result}"
 OUTPUT_BASE="${OUTPUT_BASE:-result}"
 DATA_DIR="${DATA_DIR:-data}"
 DRY_RUN="${DRY_RUN:-0}"
+TOTAL_PROTOCOLS=0
+for _protocol in $PROTOCOLS; do
+  TOTAL_PROTOCOLS=$((TOTAL_PROTOCOLS + 1))
+done
+TOTAL_TASKS=$((RUNS * TOTAL_PROTOCOLS))
+TASK_INDEX=0
 
 for run in $(seq 1 "$RUNS"); do
   for protocol in $PROTOCOLS; do
+    TASK_INDEX=$((TASK_INDEX + 1))
     cmd=(
       "$PYTHON_BIN"
       "$ROOT_DIR/acc_test/run_benchmark.py"
@@ -25,11 +32,24 @@ for run in $(seq 1 "$RUNS"); do
       "$@"
     )
 
+    printf '[%d/%d] run=%d protocol=%s output=%s/run%d\n' \
+      "$TASK_INDEX" \
+      "$TOTAL_TASKS" \
+      "$run" \
+      "$protocol" \
+      "$OUTPUT_BASE" \
+      "$run"
+
     if [[ "$DRY_RUN" == "1" ]]; then
       printf '%q ' "${cmd[@]}"
       printf '\n'
     else
       "${cmd[@]}"
+      printf '[%d/%d] done run=%d protocol=%s\n' \
+        "$TASK_INDEX" \
+        "$TOTAL_TASKS" \
+        "$run" \
+        "$protocol"
     fi
   done
 done

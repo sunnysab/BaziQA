@@ -28,7 +28,12 @@ def test_run_all_experiments_dry_run_prints_expected_matrix():
 
     assert result.returncode == 0
     lines = [line for line in result.stdout.splitlines() if line.strip()]
-    assert len(lines) == 4
-    assert all("acc_test/run_benchmark.py" in line for line in lines)
-    assert any("--output-root result/run1" in line for line in lines)
-    assert any("--output-root result/run2" in line for line in lines)
+    command_lines = [line for line in lines if "acc_test/run_benchmark.py" in line]
+    progress_lines = [line for line in lines if line.startswith("[")]
+
+    assert len(command_lines) == 4
+    assert len(progress_lines) == 4
+    assert any("[1/4]" in line for line in progress_lines)
+    assert any("[4/4]" in line for line in progress_lines)
+    assert any("--output-root result/run1" in line for line in command_lines)
+    assert any("--output-root result/run2" in line for line in command_lines)
