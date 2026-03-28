@@ -6,6 +6,7 @@ from acc_test.bazi_eval_multiturn import build_arg_parser
 from acc_test.core.evaluator import (
     extract_response_text,
     request_chat_completion,
+    request_completion_text,
     score_subject_answers,
 )
 from acc_test.core.llm_client import (
@@ -147,3 +148,34 @@ def test_request_chat_completion_retries_on_exception():
     )
     assert response == {"choices": [{"message": {"content": "最终答案：B"}}]}
     assert stub.calls == 2
+
+
+def test_request_completion_text_retries_until_text_is_extractable():
+    class StubClient:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def create_chat_completion(self, *, model, messages):
+            self.calls += 1
+            if self.calls < 3:
+                return "data: [DONE]"
+            return {"choices": [{"message": {"content": "最终答案：C"}}]}
+
+    stub = StubClient()
+    text = request_completion_text(
+        client=stub,
+        model="gpt-a",
+        messages=[{"role": "user", "content": "hi"}],
+        max_attempts=3,
+    )
+    assert text == "最终答案：C"
+    assert stub.calls == 3
+
+
+def test_extract_response_text_raises_on_empty_sse_payload():
+    try:
+        extract_response_text("data: [DONE]\n")
+    except ValueError as exc:
+        assert "Expected OpenAI chat completion object" in str(exc)
+    else:
+        raise AssertionError("ValueError expected for empty SSE payload")

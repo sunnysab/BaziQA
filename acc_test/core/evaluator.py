@@ -113,6 +113,26 @@ def request_chat_completion(
     return last_response
 
 
+def request_completion_text(
+    *,
+    client: Any,
+    model: str,
+    messages: list[dict[str, str]],
+    max_attempts: int = 6,
+) -> str:
+    last_error: Exception | None = None
+    for _ in range(max_attempts):
+        try:
+            response = client.create_chat_completion(model=model, messages=messages)
+            return extract_response_text(response)
+        except Exception as exc:
+            last_error = exc
+            time.sleep(0.5)
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("No completion response received")
+
+
 def evaluate_dataset(
     *,
     dataset_path: str | Path,
@@ -213,12 +233,11 @@ def evaluate_subject(
 
     for question in subject.questions:
         prompt = build_question_prompt(protocol, question.question, question.options)
-        response = request_chat_completion(
+        output_text = request_completion_text(
             client=client,
             model=model,
             messages=messages + [{"role": "user", "content": prompt}],
         )
-        output_text = extract_response_text(response)
         answer = extract_answer_letter(output_text, choices=_extract_choice_letters(question.options))
         question_results.append(
             QuestionResult(
