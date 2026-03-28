@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable, Iterable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import TypeVar
 
@@ -57,9 +57,18 @@ def build_failure_report_payload(
     }
 
 
-def run_jobs(jobs: Iterable[T], worker: Callable[[T], R], *, max_workers: int = 1) -> list[R]:
+def run_jobs(
+    jobs: Iterable[T],
+    worker: Callable[[T], R],
+    *,
+    max_workers: int = 1,
+    preserve_order: bool = True,
+) -> list[R]:
     job_list = list(jobs)
     if max_workers <= 1:
         return [worker(job) for job in job_list]
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        return list(executor.map(worker, job_list))
+        if preserve_order:
+            return list(executor.map(worker, job_list))
+        futures = [executor.submit(worker, job) for job in job_list]
+        return [future.result() for future in as_completed(futures)]

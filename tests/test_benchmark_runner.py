@@ -77,6 +77,19 @@ def test_run_jobs_returns_results_in_input_order():
     assert run_jobs(jobs, worker, max_workers=2) == [10, 20, 30]
 
 
+def test_run_jobs_can_return_results_in_completion_order():
+    import time
+
+    jobs = [(1, 0.02), (2, 0.0)]
+
+    def worker(job: tuple[int, float]) -> int:
+        value, delay = job
+        time.sleep(delay)
+        return value * 10
+
+    assert run_jobs(jobs, worker, max_workers=2, preserve_order=False) == [20, 10]
+
+
 def test_benchmark_cli_accepts_max_workers():
     parser = build_benchmark_arg_parser()
     args = parser.parse_args(["--protocol", "multiturn", "--max-workers", "3"])

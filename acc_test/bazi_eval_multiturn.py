@@ -54,7 +54,7 @@ def main() -> int:
         output_path = write_evaluation_result(result, output_root=args.output_root)
         return f"{model}\taccuracy={result.accuracy:.2%}\toutput={output_path}"
 
-    for line in run_jobs(models, worker, max_workers=args.max_workers):
+    for line in run_jobs(models, worker, max_workers=args.max_workers, preserve_order=False):
         print(line)
     return 0
 

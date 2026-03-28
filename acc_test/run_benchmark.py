@@ -88,7 +88,7 @@ def main() -> int:
 
     all_results = []
     failures = []
-    for outcome in run_jobs(jobs, worker, max_workers=args.max_workers):
+    for outcome in run_jobs(jobs, worker, max_workers=args.max_workers, preserve_order=False):
         print(outcome["line"])
         if outcome["ok"]:
             all_results.append(outcome["result"])
