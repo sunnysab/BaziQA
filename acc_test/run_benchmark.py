@@ -1,0 +1,67 @@
+from __future__ import annotations
+
+import argparse
+from pathlib import Path
+import sys
+
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from acc_test.core.bazi_provider import BaziProvider
+from acc_test.core.benchmark import build_summary_rows, discover_contest_datasets, format_summary_markdown
+from acc_test.core.evaluator import evaluate_dataset, write_evaluation_result
+from acc_test.core.llm_client import OpenAICompatibleClient
+
+
+DEFAULT_BAZI_SCRIPT = Path("/home/sunnysab/Code/0-Cloned/bazi/bazi.py")
+
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Run BaziQA benchmark across contest years.")
+    parser.add_argument("--data-dir", default="data")
+    parser.add_argument("--protocol", choices=("multiturn", "structured"), required=True)
+    parser.add_argument("--limit-subjects", type=int, default=None)
+    parser.add_argument("--model", default=None)
+    parser.add_argument("--bazi-script", default=str(DEFAULT_BAZI_SCRIPT))
+    parser.add_argument("--cache-root", default="result")
+    parser.add_argument("--output-root", default="result")
+    return parser
+
+
+def main() -> int:
+    args = build_arg_parser().parse_args()
+    client = OpenAICompatibleClient.from_env()
+    models = [args.model] if args.model else list(client.config.models)
+    datasets = discover_contest_datasets(Path(args.data_dir))
+    provider = BaziProvider(cache_root=Path(args.cache_root), bazi_script=Path(args.bazi_script))
+
+    all_results = []
+    for model in models:
+        for dataset_path in datasets:
+            result = evaluate_dataset(
+                dataset_path=dataset_path,
+                protocol=args.protocol,
+                client=client,
+                model=model,
+                provider=provider,
+                limit_subjects=args.limit_subjects,
+            )
+            output_path = write_evaluation_result(result, output_root=args.output_root)
+            print(f"{model}\t{dataset_path.name}\taccuracy={result.accuracy:.2%}\toutput={output_path}")
+            all_results.append(result)
+
+    summary_rows = build_summary_rows(all_results)
+    summary_path = (
+        Path(args.output_root)
+        / "evals"
+        / f"summary_{args.protocol}.md"
+    )
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(format_summary_markdown(summary_rows), encoding="utf-8")
+    print(f"summary\t{summary_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

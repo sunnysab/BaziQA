@@ -297,11 +297,19 @@ MODEL=gpt-5.4|google/gemini-3.1-pro-preview
 .venv/bin/python acc_test/bazi_eval_structured.py data/contest8_2025.json --limit-subjects 1 --model gpt-5.4
 ```
 
+### 批量跑 Contest8 全年份
+
+```bash
+.venv/bin/python acc_test/run_benchmark.py --protocol multiturn --model gpt-5.4
+.venv/bin/python acc_test/run_benchmark.py --protocol structured --model gpt-5.4
+```
+
 结果会写入：
 
 ```text
 result/bazi-results/
 result/evals/<model>/<protocol>/
+result/evals/summary_<protocol>.md
 ```
 
 ## 🎯 数据集特点
