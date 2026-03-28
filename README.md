@@ -291,6 +291,12 @@ MODEL=gpt-5.4|google/gemini-3.1-pro-preview
 .venv/bin/python acc_test/bazi_eval_multiturn.py data/contest8_2025.json --limit-subjects 1 --model gpt-5.4
 ```
 
+多模型并发：
+
+```bash
+.venv/bin/python acc_test/bazi_eval_multiturn.py data/contest8_2025.json --limit-subjects 1 --max-workers 2
+```
+
 ### 运行 Structured
 
 ```bash
@@ -300,9 +306,14 @@ MODEL=gpt-5.4|google/gemini-3.1-pro-preview
 ### 批量跑 Contest8 全年份
 
 ```bash
-.venv/bin/python acc_test/run_benchmark.py --protocol multiturn --model gpt-5.4
-.venv/bin/python acc_test/run_benchmark.py --protocol structured --model gpt-5.4
+.venv/bin/python acc_test/run_benchmark.py --protocol multiturn --model gpt-5.4 --max-workers 2
+.venv/bin/python acc_test/run_benchmark.py --protocol structured --model gpt-5.4 --max-workers 2
 ```
+
+说明：
+
+- `--max-workers` 只会并发“不同模型 / 不同年份”的任务。
+- 同一命主内部 5 道题仍保持串行，以保证 multi-turn 会话语义不被破坏。
 
 结果会写入：
 

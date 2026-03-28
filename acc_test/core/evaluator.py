@@ -159,6 +159,29 @@ def evaluate_dataset(
     )
 
 
+def prepare_chart_cache(
+    *,
+    dataset_path: str | Path,
+    provider: BaziProvider,
+    limit_subjects: int | None = None,
+) -> None:
+    dataset_file = Path(dataset_path)
+    dataset_name = dataset_file.stem
+    subjects = load_contest_dataset(dataset_file)
+    if limit_subjects is not None:
+        subjects = subjects[:limit_subjects]
+
+    for index, subject in enumerate(subjects, start=1):
+        provider.generate_or_load(
+            dataset_name=dataset_name,
+            person_id=subject.person_id,
+            subject_name=subject.name,
+            anonymous_id=f"命主{index:03d}",
+            birth=subject.birth,
+            gender=subject.gender,
+        )
+
+
 def evaluate_subject(
     *,
     client: OpenAICompatibleClient,

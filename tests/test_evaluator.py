@@ -71,9 +71,12 @@ def test_build_chat_completion_payload_disables_streaming():
 
 def test_cli_accepts_dataset_path_and_limit_subjects():
     parser = build_arg_parser()
-    args = parser.parse_args(["data/contest8_2025.json", "--limit-subjects", "1"])
+    args = parser.parse_args(
+        ["data/contest8_2025.json", "--limit-subjects", "1", "--max-workers", "2"]
+    )
     assert args.dataset_path.endswith("contest8_2025.json")
     assert args.limit_subjects == 1
+    assert args.max_workers == 2
 
 
 def test_multiturn_script_can_be_invoked_directly():

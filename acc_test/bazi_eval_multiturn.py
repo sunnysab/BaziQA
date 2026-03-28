@@ -9,7 +9,8 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acc_test.core.bazi_provider import BaziProvider
-from acc_test.core.evaluator import evaluate_dataset, write_evaluation_result
+from acc_test.core.benchmark import run_jobs
+from acc_test.core.evaluator import evaluate_dataset, prepare_chart_cache, write_evaluation_result
 from acc_test.core.llm_client import OpenAICompatibleClient
 
 
@@ -21,6 +22,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("dataset_path")
     parser.add_argument("--limit-subjects", type=int, default=None)
     parser.add_argument("--model", default=None)
+    parser.add_argument("--max-workers", type=int, default=1)
     parser.add_argument("--bazi-script", default=str(DEFAULT_BAZI_SCRIPT))
     parser.add_argument("--cache-root", default="result")
     parser.add_argument("--output-root", default="result")
@@ -29,10 +31,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = build_arg_parser().parse_args()
-    client = OpenAICompatibleClient.from_env()
-    models = [args.model] if args.model else list(client.config.models)
+    config = OpenAICompatibleClient.from_env().config
+    models = [args.model] if args.model else list(config.models)
     provider = BaziProvider(cache_root=Path(args.cache_root), bazi_script=Path(args.bazi_script))
-    for model in models:
+
+    prepare_chart_cache(
+        dataset_path=args.dataset_path,
+        provider=provider,
+        limit_subjects=args.limit_subjects,
+    )
+
+    def worker(model: str) -> str:
+        client = OpenAICompatibleClient(config)
         result = evaluate_dataset(
             dataset_path=args.dataset_path,
             protocol="multiturn",
@@ -42,7 +52,10 @@ def main() -> int:
             limit_subjects=args.limit_subjects,
         )
         output_path = write_evaluation_result(result, output_root=args.output_root)
-        print(f"{model}\taccuracy={result.accuracy:.2%}\toutput={output_path}")
+        return f"{model}\taccuracy={result.accuracy:.2%}\toutput={output_path}"
+
+    for line in run_jobs(models, worker, max_workers=args.max_workers):
+        print(line)
     return 0
 
 

@@ -1,9 +1,15 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Callable, Iterable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import TypeVar
 
 from acc_test.core.evaluator import EvaluationResult
+
+T = TypeVar("T")
+R = TypeVar("R")
 
 
 def discover_contest_datasets(data_dir: Path) -> list[Path]:
@@ -37,3 +43,11 @@ def format_summary_markdown(rows: list[dict[str, object]]) -> str:
             f"| {row['model']} | {row['protocol']} | {row['datasets']} | {row['macro_accuracy']:.2%} |"
         )
     return "\n".join(lines) + "\n"
+
+
+def run_jobs(jobs: Iterable[T], worker: Callable[[T], R], *, max_workers: int = 1) -> list[R]:
+    job_list = list(jobs)
+    if max_workers <= 1:
+        return [worker(job) for job in job_list]
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        return list(executor.map(worker, job_list))
