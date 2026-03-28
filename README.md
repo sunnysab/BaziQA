@@ -328,6 +328,8 @@ RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh --model gpt-5.4
 
 - `--max-workers` 只会并发“不同模型 / 不同年份”的任务。
 - 同一命主内部 5 道题仍保持串行，以保证 multi-turn 会话语义不被破坏。
+- 如果某个模型/年份任务失败，已完成的结果文件会保留，失败详情会写入 `failures_<protocol>.json`。
+- `scripts/run_all_experiments.sh` 遇到单个任务失败时不会中断后续轮次，会在全部任务结束后以非零状态退出。
 
 结果会写入：
 
@@ -335,6 +337,7 @@ RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh --model gpt-5.4
 result/bazi-results/
 result/evals/<model>/<protocol>/
 result/evals/summary_<protocol>.md
+result/evals/failures_<protocol>.json
 ```
 
 ## 🎯 数据集特点

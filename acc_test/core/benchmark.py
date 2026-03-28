@@ -45,6 +45,18 @@ def format_summary_markdown(rows: list[dict[str, object]]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def build_failure_report_payload(
+    *,
+    protocol: str,
+    failures: list[dict[str, object]],
+) -> dict[str, object]:
+    return {
+        "protocol": protocol,
+        "failure_count": len(failures),
+        "failures": failures,
+    }
+
+
 def run_jobs(jobs: Iterable[T], worker: Callable[[T], R], *, max_workers: int = 1) -> list[R]:
     job_list = list(jobs)
     if max_workers <= 1:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-$ROOT_DIR/.venv/bin/python}"
@@ -11,6 +11,7 @@ CACHE_ROOT="${CACHE_ROOT:-result}"
 OUTPUT_BASE="${OUTPUT_BASE:-result}"
 DATA_DIR="${DATA_DIR:-data}"
 DRY_RUN="${DRY_RUN:-0}"
+FAILED_TASKS=0
 TOTAL_PROTOCOLS=0
 for _protocol in $PROTOCOLS; do
   TOTAL_PROTOCOLS=$((TOTAL_PROTOCOLS + 1))
@@ -44,12 +45,25 @@ for run in $(seq 1 "$RUNS"); do
       printf '%q ' "${cmd[@]}"
       printf '\n'
     else
-      "${cmd[@]}"
-      printf '[%d/%d] done run=%d protocol=%s\n' \
-        "$TASK_INDEX" \
-        "$TOTAL_TASKS" \
-        "$run" \
-        "$protocol"
+      if "${cmd[@]}"; then
+        printf '[%d/%d] done run=%d protocol=%s\n' \
+          "$TASK_INDEX" \
+          "$TOTAL_TASKS" \
+          "$run" \
+          "$protocol"
+      else
+        FAILED_TASKS=$((FAILED_TASKS + 1))
+        printf '[%d/%d] failed run=%d protocol=%s\n' \
+          "$TASK_INDEX" \
+          "$TOTAL_TASKS" \
+          "$run" \
+          "$protocol"
+      fi
     fi
   done
 done
+
+if [[ "$DRY_RUN" != "1" && "$FAILED_TASKS" -gt 0 ]]; then
+  printf 'completed with %d failed task(s)\n' "$FAILED_TASKS"
+  exit 1
+fi

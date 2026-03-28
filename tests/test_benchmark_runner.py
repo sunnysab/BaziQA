@@ -3,6 +3,7 @@ from pathlib import Path
 
 from acc_test.core.benchmark import (
     build_summary_rows,
+    build_failure_report_payload,
     discover_contest_datasets,
     run_jobs,
 )
@@ -81,3 +82,20 @@ def test_benchmark_cli_accepts_max_workers():
     args = parser.parse_args(["--protocol", "multiturn", "--max-workers", "3"])
     assert args.protocol == "multiturn"
     assert args.max_workers == 3
+
+
+def test_build_failure_report_payload_counts_failures():
+    payload = build_failure_report_payload(
+        protocol="multiturn",
+        failures=[
+            {
+                "model": "gpt-5.4",
+                "dataset": "contest8_2025.json",
+                "error_type": "ValueError",
+                "error_message": "bad response",
+            }
+        ],
+    )
+    assert payload["protocol"] == "multiturn"
+    assert payload["failure_count"] == 1
+    assert payload["failures"][0]["model"] == "gpt-5.4"

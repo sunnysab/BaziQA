@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import sys
+import traceback
 
 
 if __package__ in {None, ""}:
@@ -10,6 +12,7 @@ if __package__ in {None, ""}:
 
 from acc_test.core.bazi_provider import BaziProvider
 from acc_test.core.benchmark import (
+    build_failure_report_payload,
     build_summary_rows,
     discover_contest_datasets,
     format_summary_markdown,
@@ -53,22 +56,44 @@ def main() -> int:
 
     def worker(job: tuple[str, Path]):
         model, dataset_path = job
-        client = OpenAICompatibleClient(config)
-        result = evaluate_dataset(
-            dataset_path=dataset_path,
-            protocol=args.protocol,
-            client=client,
-            model=model,
-            provider=provider,
-            limit_subjects=args.limit_subjects,
-        )
-        output_path = write_evaluation_result(result, output_root=args.output_root)
-        return result, f"{model}\t{dataset_path.name}\taccuracy={result.accuracy:.2%}\toutput={output_path}"
+        try:
+            client = OpenAICompatibleClient(config)
+            result = evaluate_dataset(
+                dataset_path=dataset_path,
+                protocol=args.protocol,
+                client=client,
+                model=model,
+                provider=provider,
+                limit_subjects=args.limit_subjects,
+            )
+            output_path = write_evaluation_result(result, output_root=args.output_root)
+            return {
+                "ok": True,
+                "result": result,
+                "line": f"{model}\t{dataset_path.name}\taccuracy={result.accuracy:.2%}\toutput={output_path}",
+            }
+        except Exception as exc:
+            return {
+                "ok": False,
+                "failure": {
+                    "model": model,
+                    "dataset": dataset_path.name,
+                    "protocol": args.protocol,
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc),
+                    "traceback": traceback.format_exc(),
+                },
+                "line": f"ERROR\t{model}\t{dataset_path.name}\t{type(exc).__name__}: {exc}",
+            }
 
     all_results = []
-    for result, line in run_jobs(jobs, worker, max_workers=args.max_workers):
-        print(line)
-        all_results.append(result)
+    failures = []
+    for outcome in run_jobs(jobs, worker, max_workers=args.max_workers):
+        print(outcome["line"])
+        if outcome["ok"]:
+            all_results.append(outcome["result"])
+        else:
+            failures.append(outcome["failure"])
 
     summary_rows = build_summary_rows(all_results)
     summary_path = (
@@ -79,6 +104,20 @@ def main() -> int:
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     summary_path.write_text(format_summary_markdown(summary_rows), encoding="utf-8")
     print(f"summary\t{summary_path}")
+
+    if failures:
+        failure_path = Path(args.output_root) / "evals" / f"failures_{args.protocol}.json"
+        failure_path.write_text(
+            json.dumps(
+                build_failure_report_payload(protocol=args.protocol, failures=failures),
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        print(f"failures\t{failure_path}")
+        return 1
+
     return 0
 
 
