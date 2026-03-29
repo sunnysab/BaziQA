@@ -330,6 +330,20 @@ RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh
 RUNS=3 MAX_WORKERS=4 bash scripts/run_all_experiments.sh --model gpt-5.4
 ```
 
+### 生成轻量汇总报告
+
+基于本地已保存的结果文件生成 markdown 汇总：
+
+```bash
+.venv/bin/python acc_test/report_results.py --root result
+```
+
+默认输出到：
+
+```text
+reports/summary-YYYY-MM-DD.md
+```
+
 说明：
 
 - `--max-workers` 只会并发“不同模型 / 不同年份”的任务。
