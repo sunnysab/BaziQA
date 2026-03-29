@@ -239,8 +239,12 @@ print(f"准确率: {accuracy:.2%}")
 | GPT-5.1-Chat | Multi-turn | 32.50% |
 | Gemini-3-Pro | Multi-turn | 32.10% |
 | Gemini-2.5-Flash | Multi-turn | 32.40% |
+| OpenAI GPT-5.4 | Multi-turn | 30.83% |
+| OpenAI GPT-5.4 | Structured | 31.33% |
+| Gemini-3.1-Pro-Preview | Multi-turn | 38.33% |
+| Gemini-3.1-Pro-Preview | Structured | 33.33% |
 
-*注：详细评估方法和结果请参考相关论文。*
+*注：DeepSeek / GPT-5.1 / Gemini-3-Pro / Gemini-2.5-Flash 为论文报告结果；OpenAI GPT-5.4 与 Gemini-3.1-Pro-Preview 为当前仓库本地三轮复现均值（`result/run1`–`result/run3`）。详细评估方法和结果请参考相关论文与仓库内结果文件。*
 
 ## 🧪 严格复现评测
 
