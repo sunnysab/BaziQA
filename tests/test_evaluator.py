@@ -78,6 +78,7 @@ def test_cli_accepts_dataset_path_and_limit_subjects():
     assert args.dataset_path.endswith("contest8_2025.json")
     assert args.limit_subjects == 1
     assert args.max_workers == 2
+    assert args.bazi_script.endswith("third_party/bazi/bazi.py")
 
 
 def test_multiturn_script_can_be_invoked_directly():

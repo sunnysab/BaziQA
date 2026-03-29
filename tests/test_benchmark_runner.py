@@ -98,6 +98,7 @@ def test_benchmark_cli_accepts_max_workers():
     assert args.protocol == "multiturn"
     assert args.max_workers == 3
     assert args.resume is True
+    assert args.bazi_script.endswith("third_party/bazi/bazi.py")
 
 
 def test_build_failure_report_payload_counts_failures():

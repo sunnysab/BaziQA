@@ -1,0 +1,3 @@
+[submodule "third_party/bazi"]
+	path = third_party/bazi
+	url = git@github.com:china-testing/bazi.git

@@ -40,13 +40,14 @@
 推荐使用仓库内虚拟环境：
 
 ```bash
+git submodule update --init --recursive
 python -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
 ```
 
 本项目依赖本地排盘工具：
 
-- `~/Code/0-Cloned/bazi/bazi.py`
+- `third_party/bazi/bazi.py`
 
 代码会自动调用该脚本生成命盘缓存。
 

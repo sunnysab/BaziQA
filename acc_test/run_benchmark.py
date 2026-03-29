@@ -25,7 +25,7 @@ from acc_test.core.evaluator import evaluate_dataset, prepare_chart_cache, write
 from acc_test.core.llm_client import OpenAICompatibleClient
 
 
-DEFAULT_BAZI_SCRIPT = Path("/home/sunnysab/Code/0-Cloned/bazi/bazi.py")
+DEFAULT_BAZI_SCRIPT = Path(__file__).resolve().parents[1] / "third_party" / "bazi" / "bazi.py"
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

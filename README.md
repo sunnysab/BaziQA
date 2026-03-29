@@ -25,6 +25,12 @@ data/
 └── celebrity50_zh.json         # 50位名人数据集
 ```
 
+实验代码依赖仓库内 submodule：
+
+```bash
+git submodule update --init --recursive
+```
+
 ## 📊 数据统计
 
 | 数据集 | 命主数量 | 问题数量 | 年份 | 文件大小 |
@@ -251,7 +257,7 @@ print(f"准确率: {accuracy:.2%}")
 当前仓库已补充一套面向 Contest8 的严格复现评测脚本，评测流程为：
 
 1. 读取 `data/contest8_*.json`
-2. 调用本地 `~/Code/0-Cloned/bazi/bazi.py` 生成命盘文本
+2. 调用仓库内 `third_party/bazi/bazi.py` 生成命盘文本
 3. 将命盘作为固定上下文输入模型
 4. 以 `Multi-turn` 或 `Structured` 协议逐题评测
 5. 输出逐题结果与准确率到 `result/evals/`
@@ -287,7 +293,7 @@ MODEL=gpt-5.4|google/gemini-3.1-pro-preview
 
 - `OPENAI_MODEL` / `MODEL` 支持用 `|` 分隔多个模型，脚本会逐个评测。
 - 若 `URL` 直接填网关首页或单聊天接口，脚本会自动规范到标准 OpenAI chat completions 路径。
-- 本地 `bazi.py` 依赖 `bidict`、`colorama`、`lunar_python`，已包含在 `requirements.txt`。
+- 仓库内 submodule `third_party/bazi` 依赖 `bidict`、`colorama`、`lunar_python`，已包含在 `requirements.txt`。
 
 ### 运行 Multi-turn
 
